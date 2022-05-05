@@ -1,0 +1,100 @@
+name: DEVELOP CD
+
+on:
+  repository_dispatch:
+    types: [dev-man-net48-repository-dispatch]
+
+env:
+  APP_CSPROJ: .\net48-app1\SimpleNetFrame\SimpleNetFrame.csproj
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-2019
+    
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: '${{ secrets.ORG_NAME }}/${{ secrets.MAN_NET48_APP_NAME }}'
+          ref: 'develop'
+
+      - name: Setup MSBuild path
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.5
+    
+      - uses: actions/cache@v2
+        with:
+          path: |
+            %userprofile%\.nuget\packages
+            %localappdata%\NuGet\v3-cache
+            %temp%\NuGetScratch
+            ${{ github.workspace }}\packages
+            %localappdata%\NuGet\plugins-cache
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore NuGet packages
+        run: nuget restore
+
+      - name: Publish to folder
+        run: msbuild $env:APP_CSPROJ /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir=$env:GITHUB_WORKSPACE"\published\"
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v2
+        with:
+          name: net48-app
+          path: .\published\
+
+  setting:
+    name: App setting
+    runs-on: self-hosted:net48
+    environment: DEV_APP1
+
+    steps:
+
+    - name: AZ Login
+      run: az login --identity
+
+    - name: Set Web App Settings
+      uses: Azure/appservice-settings@v1
+      with:
+        app-name: ${{ secrets.MAN_NET48_APP_NAME }}
+        slot-name: 'develop'
+        app-settings-json: |
+          [
+            {
+              "name": "SomeSecret",
+              "value": "${{ secrets.SOME_SECRET }}",
+              "slotSetting": true
+            }
+          ]
+
+    - name: AZ Logout
+      run: az logout
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: [build, setting]
+    environment: DEV_APP1
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v2
+        with:
+          name: net48-app
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ secrets.MAN_NET48_APP_NAME }}
+          slot-name: "develop"
+          publish-profile: ${{ secrets.APP_SERVICE_PUBLISHPROFILE }}
+          package: .
+
+      - name: Cleaning workspace
+        run: rm -rf ./*
