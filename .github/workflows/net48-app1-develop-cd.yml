@@ -2,7 +2,7 @@ name: DEVELOP CD
 
 on:
   repository_dispatch:
-    types: [dev-man-net48-repository-dispatch]
+    types: [dev-demo-ais-cicd-repository-dispatch]
 
 env:
   SOLUTION_PATH: .\net48-app1\
