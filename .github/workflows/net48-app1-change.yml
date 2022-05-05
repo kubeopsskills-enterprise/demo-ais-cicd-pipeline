@@ -1,0 +1,32 @@
+name: Review by Change team
+
+on:
+  repository_dispatch:
+    types: [change-demo-ais-cicd-repository-dispatch]
+
+jobs:
+  approve:
+    environment: 'CHANGE_APP1'
+    name: Approve to deploy Production
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: |
+
+  repository_dispatch:
+    name: Repository dispatch
+    needs: approve
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Repository dispatch
+        run: |
+          DISPATCH_BODY=$(jq '.event_type |= "production-${{ secrets.MAN_NET48_APP_NAME }}-repository-dispatch" | .client_payload.git_reference |= "'${{ github.event.client_payload.git_reference }}'"' ./.github/template/env-repository-dispatch.json)
+          echo $DISPATCH_BODY
+          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/${{ secrets.MAN_NET48_APP_NAME }}-pipeline/dispatches' \
+            --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
+            --header 'accept: application/vnd.github.v3+json' \
+            --header 'Content-Type: application/json' \
+            --data-raw "$DISPATCH_BODY"
