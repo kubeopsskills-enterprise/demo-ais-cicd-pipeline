@@ -17,8 +17,8 @@ jobs:
       - name: Set Web App Settings
         uses: Azure/appservice-settings@v1
         with:
-          app-name: ${{ secrets.MAN_NET48_APP_NAME }}
-          slot-name: 'production'
+          app-name: man-net48-prd
+          slot-name: 'Production'
           app-settings-json: |
             [
               {
@@ -48,8 +48,8 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ secrets.MAN_NET48_APP_NAME }}
-          slot-name: "production"
+          app-name: man-net48-prd
+          slot-name: 'Production'
           publish-profile: ${{ secrets.APP_SERVICE_PUBLISHPROFILE }}
           package: .
 
