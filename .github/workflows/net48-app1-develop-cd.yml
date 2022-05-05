@@ -92,8 +92,8 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ secrets.MAN_NET48_APP_NAME }}
-          slot-name: "develop"
+          app-name: man-net48-dev
+          slot-name: 'Production'
           publish-profile: ${{ secrets.APP_SERVICE_PUBLISHPROFILE }}
           package: .
 
