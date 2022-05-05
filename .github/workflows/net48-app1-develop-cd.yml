@@ -62,8 +62,8 @@ jobs:
     - name: Set Web App Settings
       uses: Azure/appservice-settings@v1
       with:
-        app-name: ${{ secrets.MAN_NET48_APP_NAME }}
-        slot-name: 'develop'
+        app-name: man-net48-dev
+        slot-name: 'Production'
         app-settings-json: |
           [
             {
