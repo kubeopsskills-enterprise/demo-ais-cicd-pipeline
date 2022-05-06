@@ -2,7 +2,7 @@ name: APP 2 DEVELOP CD
 
 on:
   repository_dispatch:
-    types: [dev-net48-app2-repository-dispatchh]
+    types: [dev-net48-app2-repository-dispatch]
 
 env:
   SOLUTION_PATH: .\net48-app2\
