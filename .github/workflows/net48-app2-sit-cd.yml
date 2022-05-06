@@ -35,14 +35,14 @@ jobs:
       - name: Download Artifact
         uses: robinraju/release-downloader@v1.3
         with:
-          repository: '${{ secrets.ORG_NAME }}/${{ secrets.MAN_NET48_APP_NAME }}'
+          repository: '${{ secrets.ORG_NAME }}/demo-ais-cicd'
           tag: ${{ github.event.client_payload.git_reference }}
-          fileName: artifact-${{ secrets.MAN_NET48_APP_NAME }}-${{ github.event.client_payload.git_reference }}.zip
+          fileName: artifact-net48-app2-${{ github.event.client_payload.git_reference }}.zip
           token: ${{ secrets.ORG_PAT }}
 
       - name: Unzip Artifact
         run: |
-          unzip artifact-${{ secrets.MAN_NET48_APP_NAME }}-${{ github.event.client_payload.git_reference }}.zip
+          unzip artifact-net48-app2-${{ github.event.client_payload.git_reference }}.zip
           ls
 
       - name: Deploy to Azure Web App
