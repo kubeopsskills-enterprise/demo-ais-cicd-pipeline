@@ -1,0 +1,76 @@
+name: APP 2 SIT CD
+
+on:
+  repository_dispatch:
+    types: [sit-net48-app2-repository-dispatch]
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: self-hosted:net48
+    environment:
+      name: SIT_APP2
+
+    steps:
+      - name: AZ Login
+        run: az login --identity
+
+      - name: Set Web App Settings
+        uses: Azure/appservice-settings@v1
+        with:
+          app-name: man-net48-sit
+          slot-name: 'Production'
+          app-settings-json: |
+            [
+              {
+                "name": "SomeSecret",
+                "value": "${{ secrets.SOME_SECRET }}",
+                "slotSetting": true
+              }
+            ]
+
+      - name: AZ Logout
+        run: az logout
+
+      - name: Download Artifact
+        uses: robinraju/release-downloader@v1.3
+        with:
+          repository: '${{ secrets.ORG_NAME }}/${{ secrets.MAN_NET48_APP_NAME }}'
+          tag: ${{ github.event.client_payload.git_reference }}
+          fileName: artifact-${{ secrets.MAN_NET48_APP_NAME }}-${{ github.event.client_payload.git_reference }}.zip
+          token: ${{ secrets.ORG_PAT }}
+
+      - name: Unzip Artifact
+        run: |
+          unzip artifact-${{ secrets.MAN_NET48_APP_NAME }}-${{ github.event.client_payload.git_reference }}.zip
+          ls
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: man-net48-sit
+          slot-name: 'Production'
+          publish-profile: ${{ secrets.APP_SERVICE_PUBLISHPROFILE }}
+          package: .
+      
+      - name: Cleaning workspace
+        run: rm -rf ./*
+
+  repository_dispatch:
+    name: Repository dispatch
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Repository dispatch
+        run: |
+          DISPATCH_BODY=$(jq '.event_type |= "dast-${{ secrets.MAN_NET48_APP_NAME }}-repository-dispatch" | .client_payload.git_reference |= "'${{ github.event.client_payload.git_reference }}'"' ./.github/template/env-repository-dispatch.json)
+          echo $DISPATCH_BODY
+          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/${{ secrets.MAN_NET48_APP_NAME }}/dispatches' \
+            --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
+            --header 'accept: application/vnd.github.v3+json' \
+            --header 'Content-Type: application/json' \
+            --data-raw "$DISPATCH_BODY"
