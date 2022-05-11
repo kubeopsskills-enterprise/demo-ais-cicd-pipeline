@@ -1,0 +1,62 @@
+name: NG-APP-1 DEVELOP CD
+
+on:
+  repository_dispatch:
+    types: [dev-ng-app-1-repository-dispatch]
+
+jobs:
+  build:
+    name: Build Angular app
+    runs-on: ubuntu-latest
+    working-directory: ng-app1/
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'kubeopsskills-enterprise/demo-ais-cicd'
+          ref: 'develop'
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: 'npm'
+          cache-dependency-path: ./package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build-dev
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ng-app
+          path: dist/
+
+  deploy:
+    name: Deploy Angular app
+    needs: build
+    runs-on: ubuntu-latest
+    environment: DEV-NG-APP-1
+
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: ng-app
+          path: dist/
+
+      - uses: cschleiden/replace-tokens@v1
+        with:
+          files: '["**/**/*.js"]'
+        env:
+          SOME_SECRET: ${{ secrets.SOME_SECRET }}
+
+      - name: Deploy
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: "upload"
+          app_location: "/dist/ng-app-1/"
+          output_location: ""
+          skip_app_build: true
