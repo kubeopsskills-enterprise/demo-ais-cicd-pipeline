@@ -1,17 +1,17 @@
-name: NG-APP-1 SIT CD
+name: NG-APP1 UAT CD
 
 on:
   repository_dispatch:
-    types: [sit-ng-app-1-repository-dispatch]
+    types: [uat-ng-app1-repository-dispatch]
 
 env:
-  REPOSITORY: "kubeopsskills-enterprise/man-ng"
+  REPOSITORY: "kubeopsskills-enterprise/demo-ais-cicd"
 
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    environment: SIT-NG-APP-1
+    environment: UAT-NG-APP1
 
     steps:
       - name: Download Artifact
@@ -19,12 +19,12 @@ jobs:
         with:
           repository:  ${{ env.REPOSITORY }}
           tag: ${{ github.event.client_payload.git_reference }}
-          fileName: artifact-ng-app-1-${{ github.event.client_payload.git_reference }}.zip
+          fileName: artifact-ng-app1-${{ github.event.client_payload.git_reference }}.zip
           token: ${{ secrets.ORG_PAT }}
 
       - name: Unzip Artifact
         run: |
-          unzip artifact-ng-app-1-${{ github.event.client_payload.git_reference }}.zip
+          unzip artifact-ng-app1-${{ github.event.client_payload.git_reference }}.zip
           ls
 
       - uses: cschleiden/replace-tokens@v1
@@ -39,7 +39,7 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           action: "upload"
-          app_location: "/dist/ng-app-1/"
+          app_location: "/dist/ng-app1/"
           output_location: ""
           skip_app_build: true
 
@@ -53,9 +53,9 @@ jobs:
 
       - name: Repository dispatch
         run: |
-          DISPATCH_BODY=$(jq '.event_type |= "dast-ng-app-1-repository-dispatch" | .client_payload.git_reference |= "'${{ github.event.client_payload.git_reference }}'"' ./.github/template/env-repository-dispatch.json)
+          DISPATCH_BODY=$(jq '.event_type |= "load-test-ng-app1-repository-dispatch" | .client_payload.git_reference |= "'${{ github.event.client_payload.git_reference }}'"' ./.github/template/env-repository-dispatch.json)
           echo $DISPATCH_BODY
-          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/demo-ais-cicd/dispatches' \
+          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/demo-ais-cicd-pipeline/dispatches' \
             --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
             --header 'accept: application/vnd.github.v3+json' \
             --header 'Content-Type: application/json' \

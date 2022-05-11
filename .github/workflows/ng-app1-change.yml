@@ -1,20 +1,21 @@
-name: NG-APP-1 Automate Test Run
+name: NG-APP1 Review by Change team
 
 on:
   repository_dispatch:
-    types: [integration-test-ng-app-1-repository-dispatch]
+    types: [change-ng-app1-repository-dispatch]
 
 jobs:
-  integration_test:
-    name: Tests
+  approve:
+    environment: 'CHANGE-NG-APP1'
+    name: Approve to deploy Production
     runs-on: ubuntu-latest
 
     steps:
-    - run: echo 'This will be added by AIS later'
+      - run: |
 
   repository_dispatch:
     name: Repository dispatch
-    needs: integration_test
+    needs: approve
     runs-on: ubuntu-latest
 
     steps:
@@ -22,7 +23,7 @@ jobs:
 
       - name: Repository dispatch
         run: |
-          DISPATCH_BODY=$(jq '.event_type |= "uat-ng-app-1-repository-dispatch" | .client_payload.git_reference |= "'${{ github.event.client_payload.git_reference }}'"' ./.github/template/env-repository-dispatch.json)
+          DISPATCH_BODY=$(jq '.event_type |= "production-ng-app1-repository-dispatch" | .client_payload.git_reference |= "'${{ github.event.client_payload.git_reference }}'"' ./.github/template/env-repository-dispatch.json)
           echo $DISPATCH_BODY
           curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/demo-ais-cicd-pipeline/dispatches' \
             --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \

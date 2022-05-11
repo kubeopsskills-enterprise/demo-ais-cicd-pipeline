@@ -1,8 +1,8 @@
-name: NG-APP-1 PRODUCTION CD
+name: NG-APP1 PRODUCTION CD
 
 on:
   repository_dispatch:
-    types: [production-ng-app-1-repository-dispatch]
+    types: [production-ng-app1-repository-dispatch]
 
 env:
   REPOSITORY: "kubeopsskills-enterprise/demo-ais-cicd"
@@ -11,7 +11,7 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    environment: PRODUCTION-NG-APP-1
+    environment: PRODUCTION-NG-APP1
 
     steps:
       - name: Download Artifact
@@ -39,6 +39,6 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           action: "upload"
-          app_location: "/dist/ng-app-1/"
+          app_location: "/dist/ng-app1/"
           output_location: ""
           skip_app_build: true
