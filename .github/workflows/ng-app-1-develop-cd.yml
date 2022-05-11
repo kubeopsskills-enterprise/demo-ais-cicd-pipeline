@@ -16,11 +16,10 @@ jobs:
           ref: 'develop'
 
       - uses: actions/setup-node@v2
-        working-directory: ng-app1/
         with:
           node-version: '16'
           cache: 'npm'
-          cache-dependency-path: ./package-lock.json
+          cache-dependency-path: ./ng-app1//package-lock.json
 
       - name: Install dependencies
         working-directory: ng-app1/
@@ -31,10 +30,9 @@ jobs:
         run: npm run build-dev
 
       - uses: actions/upload-artifact@v3
-        working-directory: ng-app1/
         with:
           name: ng-app
-          path: dist/
+          path: ng-app1/dist/
 
   deploy:
     name: Deploy Angular app
@@ -44,25 +42,22 @@ jobs:
 
     steps:
       - uses: actions/download-artifact@v3
-        working-directory: ng-app1/
         with:
           name: ng-app
-          path: dist/
+          path: ng-app1/dist/
 
       - uses: cschleiden/replace-tokens@v1
-        working-directory: ng-app1/
         with:
-          files: '["**/**/*.js"]'
+          files: '["**/**/**/*.js"]'
         env:
           SOME_SECRET: ${{ secrets.SOME_SECRET }}
 
       - name: Deploy
-        working-directory: ng-app1/
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           action: "upload"
-          app_location: "/dist/ng-app-1/"
+          app_location: "ng-app1//dist/ng-app-1/"
           output_location: ""
           skip_app_build: true
