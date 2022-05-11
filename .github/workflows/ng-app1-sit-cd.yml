@@ -5,7 +5,7 @@ on:
     types: [sit-ng-app1-repository-dispatch]
 
 env:
-  REPOSITORY: "kubeopsskills-enterprise/man-ng"
+  REPOSITORY: "kubeopsskills-enterprise/demo-ais-cicd"
 
 jobs:
   deploy:
