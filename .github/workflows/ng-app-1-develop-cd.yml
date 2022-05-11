@@ -8,7 +8,6 @@ jobs:
   build:
     name: Build Angular app
     runs-on: ubuntu-latest
-    working-directory: ng-app1/
 
     steps:
       - uses: actions/checkout@v3
@@ -17,18 +16,22 @@ jobs:
           ref: 'develop'
 
       - uses: actions/setup-node@v2
+        working-directory: ng-app1/
         with:
           node-version: '16'
           cache: 'npm'
           cache-dependency-path: ./package-lock.json
 
       - name: Install dependencies
+        working-directory: ng-app1/
         run: npm install
 
       - name: Build
+        working-directory: ng-app1/
         run: npm run build-dev
 
       - uses: actions/upload-artifact@v3
+        working-directory: ng-app1/
         with:
           name: ng-app
           path: dist/
@@ -41,17 +44,20 @@ jobs:
 
     steps:
       - uses: actions/download-artifact@v3
+        working-directory: ng-app1/
         with:
           name: ng-app
           path: dist/
 
       - uses: cschleiden/replace-tokens@v1
+        working-directory: ng-app1/
         with:
           files: '["**/**/*.js"]'
         env:
           SOME_SECRET: ${{ secrets.SOME_SECRET }}
 
       - name: Deploy
+        working-directory: ng-app1/
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
