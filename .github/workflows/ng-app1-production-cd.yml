@@ -19,12 +19,12 @@ jobs:
         with:
           repository:  ${{ env.REPOSITORY }}
           tag: ${{ github.event.client_payload.git_reference }}
-          fileName: artifact-${{ secrets.MAN_NG_APP_NAME }}-${{ github.event.client_payload.git_reference }}.zip
+          fileName: artifact-ng-app1-${{ github.event.client_payload.git_reference }}.zip
           token: ${{ secrets.ORG_PAT }}
 
       - name: Unzip Artifact
         run: |
-          unzip artifact-${{ secrets.MAN_NG_APP_NAME }}-${{ github.event.client_payload.git_reference }}.zip
+          unzip artifact-ng-app1-${{ github.event.client_payload.git_reference }}.zip
           ls
 
       - uses: cschleiden/replace-tokens@v1
