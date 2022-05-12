@@ -1,0 +1,33 @@
+name: NG-APP2 Review by VA/PT security team
+
+on:
+  repository_dispatch:
+    types: [va-pt-security-ng-app2-repository-dispatch]
+
+
+jobs:
+  approve:
+    environment: 'VAPT-SECURITY-NG-APP2'
+    name: Approve to transfer to Change team
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: |
+
+  repository_dispatch:
+    name: Repository dispatch
+    needs: approve
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Repository dispatch
+        run: |
+          DISPATCH_BODY=$(jq '.event_type |= "change-ng-app2-repository-dispatch" | .client_payload.git_reference |= "'${{ github.event.client_payload.git_reference }}'"' ./.github/template/env-repository-dispatch.json)
+          echo $DISPATCH_BODY
+          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/demo-ais-cicd-pipeline/dispatches' \
+            --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
+            --header 'accept: application/vnd.github.v3+json' \
+            --header 'Content-Type: application/json' \
+            --data-raw "$DISPATCH_BODY"  

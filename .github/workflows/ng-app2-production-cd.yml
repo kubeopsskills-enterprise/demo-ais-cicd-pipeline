@@ -1,0 +1,44 @@
+name: NG-APP2 PRODUCTION CD
+
+on:
+  repository_dispatch:
+    types: [production-ng-app2-repository-dispatch]
+
+env:
+  REPOSITORY: "kubeopsskills-enterprise/demo-ais-cicd"
+  
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: PRODUCTION-NG-APP2
+
+    steps:
+      - name: Download Artifact
+        uses: robinraju/release-downloader@v1.3
+        with:
+          repository:  ${{ env.REPOSITORY }}
+          tag: ${{ github.event.client_payload.git_reference }}
+          fileName: artifact-ng-app2-${{ github.event.client_payload.git_reference }}.zip
+          token: ${{ secrets.ORG_PAT }}
+
+      - name: Unzip Artifact
+        run: |
+          unzip artifact-ng-app2-${{ github.event.client_payload.git_reference }}.zip
+          ls
+
+      - uses: cschleiden/replace-tokens@v1
+        with:
+          files: '["**/**/*.js"]'
+        env:
+          SOME_SECRET: ${{ secrets.SOME_SECRET }}
+
+      - name: Deploy
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: "upload"
+          app_location: "/dist/ng-app2/"
+          output_location: ""
+          skip_app_build: true
